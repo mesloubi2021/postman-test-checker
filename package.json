@@ -1,0 +1,24 @@
+{
+  "name": "pizza-api",
+  "version": "1.0.0",
+  "description": "Pizzeria API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "lowdb": "*",
+    "nanoid": "*",
+    "newman": "^5.2.1",
+    "postman-collection": "^3.6.9",
+    "request": "^2.88.2",
+    "valid-url": "^1.0.9"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "lowdb"
+  ],
+  "license": "MIT"
+}
