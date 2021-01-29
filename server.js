@@ -8,7 +8,7 @@ const collection = require("postman-collection").Collection;
 const app = express();
 app.use(express.json());
 
-var validUrl = require('valid-url');
+var validUrl = require("valid-url");
 
 //generic base endpoint for app overview page
 app.get("/", function(request, response) {
@@ -22,7 +22,7 @@ app.get("/status", function(request, response) {
   response.send("OK");
 });
 
-app.get("/verify", function(request, response) { 
+app.get("/verify", function(request, response) {
   if (!request.query.collectionUrl) {
     response.status(400);
     response.send({ error: "collectionUrl param not found" });
@@ -32,7 +32,7 @@ app.get("/verify", function(request, response) {
 
   let url = request.query.collectionUrl;
   if (!validUrl.isUri(url))
-    response.status(400).json({message: "No collection URL provided"});
+    response.status(400).json({ message: "No collection URL provided" });
 
   let options = { json: true };
   req(url, options, (error, res, body) => {
@@ -43,23 +43,26 @@ app.get("/verify", function(request, response) {
     if (!error && res.statusCode == 200) {
       let myCollection = new collection(body);
       let requests = myCollection.toJSON().item;
-      let tests = [], pre = false, fails = [];
-      for(const apireq of requests){
-        if(apireq.event.length>1) pre=true;
-        for(const ev of apireq.event){
-          tests.push(ev.script.exec.join(' '));
-        }
+      console.log(requests);
+      let tests = [],
+        pre = false,
+        fails = [];
+      for (const apireq of requests) {
+        if (apireq.event.length > 1) pre = true;
+        if(apireq.name.indexOf("Complete training")<0)
+          for (const ev of apireq.event) {
+            tests.push(ev.script.exec.join(" "));
+          }
       }
-      let scriptText=tests.join(' ');
-      
-      //TODO accommodate variations if we aren't requiring exact syntax
-      //checks def not robust lol, we shall improve
-      if(!pre) fails.push("No pre-request script included");
-      if(tests.length<4) fails.push("Not all tests included");
+      let scriptText = tests.join(" ");
+
+      //TODO accommodate variations so we can accept varied syntax
+      if (!pre) fails.push("No pre-request script included");
+      if (tests.length < 4) fails.push("Not all tests included");
       let scriptElements = [
         {
           elem: "pm.response.json",
-          message: "No script parsing response body"
+          message: "No script parsing response body with pm.response.json syntax"
         },
         {
           elem: "pm.globals.set",
@@ -91,19 +94,19 @@ app.get("/verify", function(request, response) {
         },
         {
           elem: "to.have.status",
-          message: "No status check"
+          message: "No to.have.atatus test"
         },
         {
           elem: "to.have.property",
-          message: "No property check"
+          message: "No to.have.property test"
         },
         {
           elem: "to.be.a",
-          message: "No type check"
+          message: "No to.be.a type check"
         },
         {
           elem: "to.eql",
-          message: "No property value equality check"
+          message: "No to.eql property value equality check"
         },
         {
           elem: "setNextRequest",
@@ -111,27 +114,27 @@ app.get("/verify", function(request, response) {
         },
         {
           elem: "to.have.jsonSchema",
-          message: "No schema validation test"
+          message: "No to.have.jsonSchema validation test"
         }
       ];
-      for(const el of scriptElements){
-        if(scriptText.indexOf(el.elem)<0) fails.push(el.message);
+      for (const el of scriptElements) {
+        if (scriptText.indexOf(el.elem) < 0) fails.push(el.message);
       }
       let result = {};
-      if(fails.length>0){ 
-        result.completed=false; 
-        result.message="Oops! Your collection is still missing some parts. Check out what's missing below and go back through the steps "+
-            "in the request documentation. 🙂"
-        result.fails=fails;
-      }
-      else {
-        result.completed=true;
-        result.message="Your collection is complete! Fill out the form at bit.ly/submit-api-testing to get your badge and swag! 🏆"
+      if (fails.length > 0) {
+        result.completed = false;
+        result.message =
+          "Oops! Your collection is still missing some parts. Check out what's missing below and go back through the steps " +
+          "in the request documentation. 🙂";
+        result.fails = fails;
+      } else {
+        result.completed = true;
+        result.message =
+          "Your collection is complete! Fill out the form at bit.ly/submit-api-testing to get your badge and swag! 🏆";
       }
       response.send(result);
     }
   });
-
 });
 
 // Listen for incoming requests
