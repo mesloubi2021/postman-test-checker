@@ -53,7 +53,7 @@ app.get("/verify", function(request, response) {
       let scriptText=tests.join(' ');
       
       //TODO accommodate variations if we aren't requiring exact syntax
-      //assignment checks def not robust lol
+      //checks def not robust lol, we shall improve
       if(!pre) fails.push("No pre-request script included");
       if(tests.length<4) fails.push("Not all tests included");
       let scriptElements = [
